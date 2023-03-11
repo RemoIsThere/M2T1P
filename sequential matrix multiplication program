@@ -5,55 +5,40 @@
 
 using namespace std;
 
-const int N = 10; // matrix size
-const int MAX_VALUE = 10; // maximum value for matrix elements
-
-void matrix_multiply(int A[][N], int B[][N], int C[][N])
-{
-    for (int i = 0; i < N; ++i)
-    {
-        for (int j = 0; j < N; ++j)
-        {
-            C[i][j] = 0;
-            for (int k = 0; k < N; ++k)
-            {
-                C[i][j] += A[i][k] * B[k][j];
-            }
-        }
-    }
-}
-
-int main()
-{
-    int A[N][N], B[N][N], C[N][N];
+int main() {
+    const int N = 10; // size of matrices
+    int A[N][N], B[N][N], C[N][N]; // matrices
 
     // initialize random seed
     srand(time(NULL));
 
-    // fill matrices A and B with random values
-    for (int i = 0; i < N; ++i)
-    {
-        for (int j = 0; j < N; ++j)
-        {
-            A[i][j] = rand() % MAX_VALUE;
-            B[i][j] = rand() % MAX_VALUE;
+    // initialize matrices A and B with random values
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+            A[i][j] = rand() % 10;
+            B[i][j] = rand() % 10;
         }
     }
 
     // perform matrix multiplication
-    matrix_multiply(A, B, C);
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+            C[i][j] = 0;
+            for (int k = 0; k < N; k++) {
+                C[i][j] += A[i][k] * B[k][j];
+            }
+        }
+    }
 
     // write output to file
-    ofstream output_file("output.txt");
-    for (int i = 0; i < N; ++i)
-    {
-        for (int j = 0; j < N; ++j)
-        {
-            output_file << C[i][j] << " ";
+    ofstream outfile("output.txt");
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+            outfile << C[i][j] << " ";
         }
-        output_file << endl;
+        outfile << endl;
     }
-    output_file.close();
+    outfile.close();
 
     return 0;
 }
