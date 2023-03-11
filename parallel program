@@ -1,0 +1,87 @@
+#include <iostream>
+#include <fstream>
+#include <cstdlib>
+#include <ctime>
+#include <pthread.h>
+
+using namespace std;
+
+const int N = 1000; // size of matrices
+const int num_threads = 4; // number of threads
+
+int A[N][N], B[N][N], C[N][N]; // matrices
+
+struct thread_data {
+    int thread_id; // thread ID
+    int start_row; // start row of the subset of rows to be computed by the thread
+    int end_row; // end row of the subset of rows to be computed by the thread
+};
+
+void *multiply(void *arg) {
+    thread_data *data = (thread_data *)arg;
+    int start_row = data->start_row;
+    int end_row = data->end_row;
+
+    // compute subset of output matrix assigned to the thread
+    for (int i = start_row; i < end_row; i++) {
+        for (int j = 0; j < N; j++) {
+            C[i][j] = 0;
+            for (int k = 0; k < N; k++) {
+                C[i][j] += A[i][k] * B[k][j];
+            }
+        }
+    }
+
+    // exit thread
+    pthread_exit(NULL);
+}
+
+int main() {
+    // initialize random seed
+    srand(time(NULL));
+
+    // initialize matrices A and B with random values
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+            A[i][j] = rand() % 10;
+            B[i][j] = rand() % 10;
+        }
+    }
+
+    // perform matrix multiplication in parallel
+    pthread_t threads[num_threads];
+    thread_data thread_data_array[num_threads];
+    int rows_per_thread = N / num_threads;
+    int extra_rows = N % num_threads;
+    int start_row = 0;
+    for (int i = 0; i < num_threads; i++) {
+        int end_row = start_row + rows_per_thread;
+        if (extra_rows > 0) {
+            end_row++;
+            extra_rows--;
+        }
+        thread_data_array[i].thread_id = i;
+        thread_data_array[i].start_row = start_row;
+        thread_data_array[i].end_row = end_row;
+        start_row = end_row;
+        // create thread with thread function 'multiply' and thread data
+        pthread_create(&threads[i], NULL, multiply, (void *)&thread_data_array[i]);
+    }
+
+    // join threads
+    for (int i = 0; i < num_threads; i++) {
+        pthread_join(threads[i], NULL);
+    }
+
+    // write output to file
+    ofstream outfile("output.txt");
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+            outfile << C[i][j] << " ";
+        }
+        outfile << endl;
+    }
+    outfile.close();
+
+    return 0;
+}
