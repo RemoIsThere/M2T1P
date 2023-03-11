@@ -6,7 +6,7 @@
 using namespace std;
 
 int main() {
-    const int N = 10; // size of matrices
+    const int N = 1000; // size of matrices
     int A[N][N], B[N][N], C[N][N]; // matrices
 
     // initialize random seed
@@ -20,7 +20,8 @@ int main() {
         }
     }
 
-    // perform matrix multiplication
+    // perform matrix multiplication and time it
+    clock_t start_time = clock();
     for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
             C[i][j] = 0;
@@ -29,6 +30,10 @@ int main() {
             }
         }
     }
+    clock_t end_time = clock();
+
+    // calculate execution time in seconds
+    double execution_time = double(end_time - start_time) / CLOCKS_PER_SEC;
 
     // write output to file
     ofstream outfile("output.txt");
@@ -39,6 +44,9 @@ int main() {
         outfile << endl;
     }
     outfile.close();
+
+    // print execution time
+    cout << "Execution time: " << execution_time << " seconds." << endl;
 
     return 0;
 }
