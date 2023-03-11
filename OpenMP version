@@ -1,0 +1,81 @@
+#include <iostream>
+#include <chrono>
+#include <random>
+#include <fstream>
+#include <omp.h>
+
+using namespace std;
+
+// function to multiply two matrices A and B of size N x N and store the result in matrix C
+void mat_mult(int** A, int** B, int** C, int N) {
+    // pragma directive to parallelize the outer two loops using multiple threads
+    #pragma omp parallel for collapse(2)
+    for(int i = 0; i < N; i++) {
+        for(int j = 0; j < N; j++) {
+            for(int k = 0; k < N; k++) {
+                C[i][j] += A[i][k] * B[k][j];
+            }
+        }
+    }
+}
+
+int main() {
+    // initialize random seed
+    srand(time(nullptr));
+
+    // set size of matrices
+    int N = 1000;
+
+    // allocate memory for matrices
+    int** A = new int*[N];
+    int** B = new int*[N];
+    int** C = new int*[N];
+    for(int i = 0; i < N; i++) {
+        A[i] = new int[N];
+        B[i] = new int[N];
+        C[i] = new int[N];
+    }
+
+    // initialize matrices with random values
+    for(int i = 0; i < N; i++) {
+        for(int j = 0; j < N; j++) {
+            A[i][j] = rand() % 100;
+            B[i][j] = rand() % 100;
+            C[i][j] = 0;
+        }
+    }
+
+    // start timer
+    auto start_time = chrono::high_resolution_clock::now();
+
+    // multiply matrices
+    mat_mult(A, B, C, N);
+
+    // stop timer
+    auto end_time = chrono::high_resolution_clock::now();
+    auto duration = chrono::duration_cast<chrono::microseconds>(end_time - start_time);
+
+    // print execution time
+    cout << "Execution time: " << duration.count() << " microseconds" << endl;
+
+    // write output to file
+    ofstream out_file("output.txt");
+    for(int i = 0; i < N; i++) {
+        for(int j = 0; j < N; j++) {
+            out_file << C[i][j] << " ";
+        }
+        out_file << endl;
+    }
+
+    // free memory
+    for(int i = 0; i < N; i++) {
+        delete[] A[i];
+        delete[] B[i];
+        delete[] C[i];
+    }
+    delete[] A;
+    delete[] B;
+    delete[] C;
+
+    return 0;
+}
